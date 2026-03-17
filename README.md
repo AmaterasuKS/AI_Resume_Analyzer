@@ -37,12 +37,10 @@
 
 ## 🖼 Screenshot
 
-<!-- Replace the URL below with your own screenshot after uploading to the repo -->
-<p align="center">
-  <img src="screenshot.png" alt="AI Resume Analyzer" width="700" />
-</p>
+<img width="1905" height="969" alt="image" src="https://github.com/user-attachments/assets/fcdc1063-dfc6-4b0c-9041-6f8064562fac" />
+<img width="1910" height="967" alt="image" src="https://github.com/user-attachments/assets/55c319a9-48d4-4044-80ad-a4d95f4245cf" />
 
-*Add a `screenshot.png` to the repo root to show it here.*
+
 
 ---
 
