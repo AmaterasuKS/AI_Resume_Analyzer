@@ -4,9 +4,9 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from groq import AuthenticationError
 
-from core.ai_analyzer import analyze_resume, answer_question
+from core.ai_analyzer import analyze_resume, answer_question, translate_analysis_content
 from core.file_reader import read_docx, read_pdf, read_txt
-from core.models import QuestionRequest, QuestionResponse, ResumeAnalysisResponse
+from core.models import QuestionRequest, QuestionResponse, ResumeAnalysisResponse, TranslateAnalysisRequest, TranslateAnalysisResponse
 
 app = FastAPI(title="AI Resume Analyzer")
 
@@ -87,3 +87,21 @@ async def question(body: QuestionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Request failed: {str(e)}")
     return QuestionResponse(answer=answer)
+
+
+@app.post("/translate_analysis", response_model=TranslateAnalysisResponse)
+async def translate_analysis(body: TranslateAnalysisRequest):
+    """Translate displayed analysis content to target language (for language toggle)."""
+    if body.target_lang not in ("en", "ru"):
+        body.target_lang = "en"
+    try:
+        data = translate_analysis_content(
+            summary=body.summary,
+            strengths=body.strengths,
+            weaknesses=body.weaknesses,
+            suggestions=body.suggestions,
+            target_lang=body.target_lang,
+        )
+        return TranslateAnalysisResponse(**data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Translation failed: {str(e)}")

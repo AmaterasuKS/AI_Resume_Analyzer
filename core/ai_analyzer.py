@@ -32,12 +32,27 @@ def _extract_json(text: str) -> dict:
 def analyze_resume(resume_text: str, job_description: str, lang: str = "en") -> ResumeAnalysisResponse:
     """Analyze resume against job description and return structured result in the requested language."""
     client = _get_client()
-    lang_instruction = (
-        "IMPORTANT: You must respond ONLY in Russian. Write the entire JSON with all text fields "
-        "(summary, strengths, weaknesses, suggestions) in Russian."
-        if lang == "ru"
-        else "IMPORTANT: You must respond ONLY in English. Write the entire JSON with all text fields in English."
-    )
+    if lang == "ru":
+        lang_instruction = (
+            "LANGUAGE: You MUST write the entire response in RUSSIAN only. "
+            "All values for summary, strengths, weaknesses, and suggestions must be in Russian. No English."
+        )
+        json_example = (
+            '"match_score": <number 0-100>, '
+            '"strengths": ["сильная сторона 1", "сильная сторона 2", ...], '
+            '"weaknesses": ["слабость 1", ...], '
+            '"suggestions": ["рекомендация 1", ...], '
+            '"summary": "Краткий вывод на русском языке."'
+        )
+    else:
+        lang_instruction = "LANGUAGE: Write the entire response in English only."
+        json_example = (
+            '"match_score": <number 0-100>, '
+            '"strengths": ["strength 1", "strength 2", ...], '
+            '"weaknesses": ["weakness 1", ...], '
+            '"suggestions": ["suggestion 1", ...], '
+            '"summary": "Brief summary in English."'
+        )
     prompt = """You are an expert HR analyst. Analyze how well the given resume matches the job description.
 
 {lang_instruction}
@@ -50,16 +65,13 @@ RESUME:
 
 Respond with ONLY a valid JSON object, no other text. Use this exact structure:
 {{
-  "match_score": <number 0-100>,
-  "strengths": ["strength 1", "strength 2", ...],
-  "weaknesses": ["weakness 1", "weakness 2", ...],
-  "suggestions": ["specific suggestion 1", "suggestion 2", ...],
-  "summary": "Brief 2-4 sentence summary of fit"
+  {json_example}
 }}
-""".format(
+Remember: all text fields must be in the required language.""".format(
         lang_instruction=lang_instruction,
         job_description=job_description,
         resume_text=resume_text,
+        json_example=json_example,
     )
     response = client.chat.completions.create(
         model=MODEL,
@@ -110,3 +122,42 @@ Answer in 1-3 short paragraphs. No JSON, just plain text.""".format(
         temperature=0.4,
     )
     return response.choices[0].message.content.strip()
+
+
+def translate_analysis_content(
+    summary: str,
+    strengths: list[str],
+    weaknesses: list[str],
+    suggestions: list[str],
+    target_lang: str,
+) -> dict:
+    """Translate analysis text fields to target language (en or ru). Returns dict with summary, strengths, weaknesses, suggestions."""
+    if target_lang not in ("en", "ru"):
+        target_lang = "en"
+    client = _get_client()
+    target_name = "Russian" if target_lang == "ru" else "English"
+    content_json = json.dumps({
+        "summary": summary,
+        "strengths": strengths,
+        "weaknesses": weaknesses,
+        "suggestions": suggestions,
+    }, ensure_ascii=False)
+    prompt = f"""Translate the following resume analysis from its current language into {target_name}. Preserve the meaning and tone. Return ONLY a valid JSON object with the same keys: summary, strengths, weaknesses, suggestions. No other text.
+
+Input (translate this):
+{content_json}
+
+Output (JSON only in {target_name}):"""
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+    )
+    content = response.choices[0].message.content
+    data = _extract_json(content)
+    return {
+        "summary": data.get("summary", summary),
+        "strengths": data.get("strengths", strengths),
+        "weaknesses": data.get("weaknesses", weaknesses),
+        "suggestions": data.get("suggestions", suggestions),
+    }

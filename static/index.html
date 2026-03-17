@@ -5,124 +5,138 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Resume Analyzer</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    @keyframes shimmer { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+    .animate-fade-in-up { animation: fadeInUp 0.45s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
+    .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
+    .stagger-1 { animation-delay: 0.04s; } .stagger-2 { animation-delay: 0.08s; } .stagger-3 { animation-delay: 0.12s; } .stagger-4 { animation-delay: 0.16s; } .stagger-5 { animation-delay: 0.2s; } .stagger-6 { animation-delay: 0.24s; }
+    .result-tag, .result-card { opacity: 0; animation: fadeInUp 0.3s ease-out forwards; }
+    .result-tag { animation-delay: calc(var(--i, 0) * 0.04s); } .result-card { animation-delay: calc(var(--i, 0) * 0.05s); }
+    #langPill { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    #langPill.lang-ru { transform: translateX(100%); }
+    .panel { background: linear-gradient(135deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.9) 50%, rgba(30,41,59,0.6) 100%); border: 1px solid rgba(99,102,241,0.2); backdrop-filter: blur(8px); transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+    .panel:hover { transform: translateY(-1px); box-shadow: 0 8px 30px -8px rgba(99,102,241,0.25); border-color: rgba(99,102,241,0.35); }
+    .btn-interactive { transition: transform 0.2s, box-shadow 0.2s, filter 0.2s; }
+    .btn-interactive:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px -4px rgba(99,102,241,0.4); }
+    .btn-interactive:active:not(:disabled) { transform: translateY(0); }
+    .tag-interactive { transition: transform 0.15s, box-shadow 0.15s; }
+    .tag-interactive:hover { transform: scale(1.03); box-shadow: 0 4px 12px -2px rgba(0,0,0,0.3); }
+    .card-interactive { transition: transform 0.15s, box-shadow 0.15s, border-color 0.2s; }
+    .card-interactive:hover { transform: translateX(4px); box-shadow: 0 4px 16px -4px rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.3); }
+    .input-interactive { transition: box-shadow 0.2s, border-color 0.2s; }
+    .input-interactive:hover { border-color: rgba(99,102,241,0.4); }
+    .input-interactive:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.25); }
+    html::-webkit-scrollbar, .overflow-y-auto::-webkit-scrollbar { width: 8px; }
+    html::-webkit-scrollbar-track, .overflow-y-auto::-webkit-scrollbar-track { background: rgba(15,23,42,0.8); border-radius: 4px; }
+    html::-webkit-scrollbar-thumb, .overflow-y-auto::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(99,102,241,0.5), rgba(139,92,246,0.5)); border-radius: 4px; }
+    html::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(99,102,241,0.7), rgba(139,92,246,0.7)); }
+    html, .overflow-y-auto { scrollbar-width: thin; scrollbar-color: rgba(99,102,241,0.5) rgba(15,23,42,0.8); }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-200 min-h-screen font-sans antialiased">
-  <div class="max-w-4xl mx-auto px-4 py-8">
-    <header class="relative text-center mb-10">
-      <div class="absolute top-0 right-0 flex gap-1">
-        <button type="button" id="langEn" class="px-3 py-1 rounded text-sm font-medium transition-colors bg-amber-500 text-slate-900" aria-pressed="true">EN</button>
-        <button type="button" id="langRu" class="px-3 py-1 rounded text-sm font-medium transition-colors bg-slate-700 text-slate-300" aria-pressed="false">RU</button>
+<body class="min-h-screen font-sans antialiased text-slate-200" style="background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 35%, #0f172a 70%, #1e293b 100%); background-attachment: fixed;">
+  <div class="max-w-3xl mx-auto px-3 py-5">
+    <header class="relative text-center mb-5">
+      <div class="absolute top-0 right-0 flex items-center">
+        <div id="langSwitch" class="relative inline-flex rounded-full p-0.5 panel cursor-pointer" role="group" aria-label="Language">
+          <span id="langPill" class="absolute top-0.5 left-0.5 h-[calc(100%-4px)] w-[calc(50%-2px)] rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30 transition-all duration-300" aria-hidden="true"></span>
+          <button type="button" id="langEn" class="relative z-10 min-w-[3rem] py-1.5 px-3 rounded-full text-xs font-semibold text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90" aria-pressed="true">EN</button>
+          <button type="button" id="langRu" class="relative z-10 min-w-[3rem] py-1.5 px-3 rounded-full text-xs font-semibold text-slate-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90" aria-pressed="false">RU</button>
+        </div>
       </div>
-      <h1 class="text-3xl font-bold text-white">AI Resume Analyzer</h1>
-      <p class="text-slate-400 mt-1" data-i18n="subtitle">Upload your resume and job description to get a match analysis</p>
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent tracking-tight">AI Resume Analyzer</h1>
+      <p class="text-slate-400 mt-1 text-sm" data-i18n="subtitle">Upload your resume and job description to get a match analysis</p>
     </header>
 
-    <!-- Drop zone -->
-    <div
-      id="dropZone"
-      class="border-2 border-dashed border-slate-600 rounded-xl p-10 text-center cursor-pointer transition-colors hover:border-slate-500 hover:bg-slate-800/50"
-    >
+    <div id="dropZone" class="rounded-xl p-6 text-center cursor-pointer panel opacity-0 animate-fade-in-up border-2 border-dashed border-indigo-500/30 hover:border-indigo-400/50">
       <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.txt" />
-      <p class="text-slate-400" id="dropZoneText" data-i18n="dropZone">Drag & drop your resume (PDF, DOCX or TXT) or click to browse</p>
-      <p class="text-sm text-slate-500 mt-1" id="fileName"></p>
+      <p class="text-slate-400 text-sm" id="dropZoneText" data-i18n="dropZone">Drag & drop your resume (PDF, DOCX or TXT) or click to browse</p>
+      <p class="text-xs text-slate-500 mt-1" id="fileName"></p>
     </div>
 
-    <!-- Job description -->
-    <div class="mt-6">
-      <label for="jobDescription" class="block text-sm font-medium text-slate-300 mb-2" data-i18n="jobLabel">Job description</label>
+    <div class="mt-4 opacity-0 animate-fade-in-up">
+      <label for="jobDescription" class="block text-xs font-medium text-slate-400 mb-1" data-i18n="jobLabel">Job description</label>
       <textarea
         id="jobDescription"
         rows="5"
-        class="w-full rounded-lg bg-slate-800 border border-slate-600 text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 px-4 py-3"
+        class="w-full min-h-[6rem] max-h-[20rem] resize-none overflow-y-auto rounded-lg panel px-3 py-2.5 text-sm text-slate-200 placeholder-slate-500 input-interactive border border-indigo-500/20"
         data-i18n-placeholder="jobPlaceholder"
         placeholder="Paste the full job description here..."
       ></textarea>
     </div>
 
-    <!-- Analyze button -->
-    <div class="mt-6">
+    <div class="mt-4 opacity-0 animate-fade-in-up stagger-1">
       <button
         id="analyzeBtn"
-        class="w-full py-3 px-6 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600 hover:from-indigo-400 hover:via-violet-400 hover:to-purple-500 btn-interactive shadow-lg shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
         data-i18n="analyzeBtn"
       >
         Analyze
       </button>
     </div>
 
-    <!-- Loading -->
-    <div id="loading" class="hidden mt-6 text-center">
-      <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-slate-400 mt-2" data-i18n="analyzing">Analyzing...</p>
+    <div id="loading" class="hidden mt-4 text-center opacity-0 animate-fade-in">
+      <div class="inline-block w-8 h-8 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-slate-400 text-xs mt-2" data-i18n="analyzing">Analyzing...</p>
     </div>
 
-    <!-- Results -->
-    <div id="results" class="hidden mt-10 space-y-8">
-      <!-- Match score -->
-      <div class="flex justify-center">
-        <div class="relative w-44 h-44">
-          <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="10" class="text-slate-700" />
-            <circle id="scoreCircle" cx="50" cy="50" r="42" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" class="transition-all duration-700" />
+    <div id="results" class="hidden mt-6 space-y-5">
+      <div class="flex justify-center opacity-0 animate-scale-in">
+        <div class="relative w-36 h-36 panel rounded-full p-1 flex items-center justify-center hover:scale-[1.02] transition-transform duration-200">
+          <svg class="w-full h-full -rotate-90 absolute inset-0" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(30,41,59,0.8)" stroke-width="8" />
+            <circle id="scoreCircle" cx="50" cy="50" r="42" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" class="transition-all duration-700 ease-out" />
           </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <span id="scoreValue" class="text-3xl font-bold text-white">0</span>
-            <span class="text-slate-400 text-sm" data-i18n="matchLabel">% match</span>
+          <div class="relative z-10 flex flex-col items-center justify-center">
+            <span id="scoreValue" class="text-3xl font-bold text-white tabular-nums">0</span>
+            <span class="text-slate-400 text-xs" data-i18n="matchLabel">% match</span>
           </div>
         </div>
       </div>
 
-      <!-- Summary -->
-      <div>
-        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="summary">Summary</h2>
-        <p id="summary" class="text-slate-300 leading-relaxed"></p>
+      <div class="opacity-0 animate-fade-in-up stagger-2 panel rounded-lg px-4 py-3">
+        <h2 class="text-sm font-semibold text-indigo-200 mb-1.5" data-i18n="summary">Summary</h2>
+        <p id="summary" class="text-slate-300 text-sm leading-relaxed"></p>
       </div>
 
-      <!-- Strengths -->
-      <div>
-        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="strengths">Strengths</h2>
-        <div id="strengths" class="flex flex-wrap gap-2"></div>
+      <div class="opacity-0 animate-fade-in-up stagger-3 panel rounded-lg px-4 py-3">
+        <h2 class="text-sm font-semibold text-emerald-300/90 mb-1.5" data-i18n="strengths">Strengths</h2>
+        <div id="strengths" class="flex flex-wrap gap-1.5"></div>
       </div>
 
-      <!-- Weaknesses -->
-      <div>
-        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="weaknesses">Weaknesses</h2>
-        <div id="weaknesses" class="flex flex-wrap gap-2"></div>
+      <div class="opacity-0 animate-fade-in-up stagger-4 panel rounded-lg px-4 py-3">
+        <h2 class="text-sm font-semibold text-rose-300/90 mb-1.5" data-i18n="weaknesses">Weaknesses</h2>
+        <div id="weaknesses" class="flex flex-wrap gap-1.5"></div>
       </div>
 
-      <!-- Suggestions -->
-      <div>
-        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="suggestions">Suggestions</h2>
-        <div id="suggestions" class="space-y-2"></div>
+      <div class="opacity-0 animate-fade-in-up stagger-5 panel rounded-lg px-4 py-3">
+        <h2 class="text-sm font-semibold text-cyan-300/90 mb-1.5" data-i18n="suggestions">Suggestions</h2>
+        <div id="suggestions" class="space-y-1.5"></div>
       </div>
 
-      <!-- Ask a question -->
-      <div class="pt-6 border-t border-slate-700">
-        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="askTitle">Ask a question</h2>
-        <p class="text-slate-400 text-sm mb-3" data-i18n="askHint">Ask anything about how your resume fits this role.</p>
-        <div class="flex gap-2">
-          <input
-            type="text"
-            id="questionInput"
-            data-i18n-placeholder="questionPlaceholder"
-            placeholder="e.g. What should I highlight in the interview?"
-            class="flex-1 rounded-lg bg-slate-800 border border-slate-600 text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-amber-500/50 px-4 py-2"
-          />
-          <button
-            id="askBtn"
-            class="py-2 px-4 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors disabled:opacity-50"
-            data-i18n="askBtn"
-          >
-            Ask
-          </button>
+      <div class="pt-4 border-t border-indigo-500/20 opacity-0 animate-fade-in-up stagger-6 panel rounded-lg px-4 py-3">
+        <h2 class="text-sm font-semibold text-violet-200 mb-1" data-i18n="askTitle">Ask a question</h2>
+        <p class="text-slate-400 text-xs mb-2" data-i18n="askHint">Ask anything about how your resume fits this role.</p>
+        <div class="flex flex-col gap-2 max-h-64 sm:max-h-72">
+          <div class="flex-1 min-h-[3rem] rounded-lg bg-slate-900/50 border border-indigo-500/20 px-3 py-2 overflow-y-auto input-interactive">
+            <div id="questionLoading" class="hidden text-slate-400 text-xs mb-1" data-i18n="thinking">Thinking...</div>
+            <div id="questionAnswer" class="hidden text-slate-300 text-sm whitespace-pre-wrap leading-relaxed"></div>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="questionInput" data-i18n-placeholder="questionPlaceholder" placeholder="e.g. What should I highlight?" class="flex-1 rounded-lg panel border border-indigo-500/20 text-sm text-slate-200 placeholder-slate-500 px-3 py-2 input-interactive" />
+            <button type="button" id="askBtn" class="py-2 px-4 rounded-lg text-sm font-medium bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white btn-interactive disabled:opacity-50" data-i18n="askBtn">Ask</button>
+          </div>
         </div>
-        <div id="questionLoading" class="hidden mt-2 text-slate-400 text-sm" data-i18n="thinking">Thinking...</div>
-        <div id="questionAnswer" class="hidden mt-3 p-4 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 whitespace-pre-wrap"></div>
       </div>
     </div>
 
-    <!-- Error -->
-    <div id="error" class="hidden mt-6 p-4 rounded-lg bg-red-900/30 border border-red-700 text-red-200"></div>
+    <div id="error" class="hidden mt-4 p-3 rounded-lg bg-gradient-to-r from-red-900/50 to-rose-900/40 border border-red-500/40 text-red-200 text-sm opacity-0 animate-fade-in"></div>
   </div>
 
   <script>
@@ -221,34 +235,63 @@
       document.documentElement.lang = lang === 'ru' ? 'ru' : 'en';
       document.getElementById('langEn').ariaPressed = lang === 'en';
       document.getElementById('langRu').ariaPressed = lang === 'ru';
-      document.getElementById('langEn').classList.toggle('bg-amber-500', lang === 'en');
-      document.getElementById('langEn').classList.toggle('text-slate-900', lang === 'en');
-      document.getElementById('langEn').classList.toggle('bg-slate-700', lang !== 'en');
+      document.getElementById('langPill').classList.toggle('lang-ru', lang === 'ru');
+      document.getElementById('langEn').classList.toggle('text-white', lang === 'en');
       document.getElementById('langEn').classList.toggle('text-slate-300', lang !== 'en');
-      document.getElementById('langRu').classList.toggle('bg-amber-500', lang === 'ru');
-      document.getElementById('langRu').classList.toggle('text-slate-900', lang === 'ru');
-      document.getElementById('langRu').classList.toggle('bg-slate-700', lang !== 'ru');
+      document.getElementById('langRu').classList.toggle('text-white', lang === 'ru');
       document.getElementById('langRu').classList.toggle('text-slate-300', lang !== 'ru');
     }
 
-    document.getElementById('langEn').addEventListener('click', () => {
+    async function translateCurrentAnalysisIfNeeded() {
+      if (results.classList.contains('hidden') || !lastAnalysis) return;
+      const langBtnEn = document.getElementById('langEn');
+      const langBtnRu = document.getElementById('langRu');
+      langBtnEn.disabled = true;
+      langBtnRu.disabled = true;
+      try {
+        const res = await fetch('/translate_analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            summary: lastAnalysis.summary || '',
+            strengths: lastAnalysis.strengths || [],
+            weaknesses: lastAnalysis.weaknesses || [],
+            suggestions: lastAnalysis.suggestions || [],
+            target_lang: lang,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Translation failed');
+        lastAnalysis = { ...lastAnalysis, ...data };
+        renderResults(lastAnalysis);
+      } catch (e) {
+        showError(e.message || t('errGeneric'));
+      } finally {
+        langBtnEn.disabled = false;
+        langBtnRu.disabled = false;
+      }
+    }
+
+    document.getElementById('langEn').addEventListener('click', async () => {
       lang = 'en';
       localStorage.setItem('resume-analyzer-lang', lang);
       applyLang();
+      await translateCurrentAnalysisIfNeeded();
     });
-    document.getElementById('langRu').addEventListener('click', () => {
+    document.getElementById('langRu').addEventListener('click', async () => {
       lang = 'ru';
       localStorage.setItem('resume-analyzer-lang', lang);
       applyLang();
+      await translateCurrentAnalysisIfNeeded();
     });
     applyLang();
 
     dropZone.addEventListener('click', () => fileInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-amber-500', 'bg-slate-800/50'); });
-    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-amber-500', 'bg-slate-800/50'); });
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-indigo-400', 'shadow-lg', 'shadow-indigo-500/20'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-indigo-400', 'shadow-lg', 'shadow-indigo-500/20'); });
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
-      dropZone.classList.remove('border-amber-500', 'bg-slate-800/50');
+      dropZone.classList.remove('border-indigo-400', 'shadow-lg', 'shadow-indigo-500/20');
       const file = e.dataTransfer?.files?.[0];
       if (file && /\.(pdf|docx|txt)$/i.test(file.name)) {
         selectedFile = file;
@@ -262,6 +305,14 @@
         fileName.textContent = file.name;
       }
     });
+
+    function fitJobDescriptionHeight() {
+      const ta = jobDescription;
+      ta.style.height = 'auto';
+      ta.style.height = Math.min(ta.scrollHeight, 320) + 'px';
+    }
+    jobDescription.addEventListener('input', fitJobDescriptionHeight);
+    jobDescription.addEventListener('paste', () => setTimeout(fitJobDescriptionHeight, 0));
 
     function showError(msg) {
       errorEl.textContent = msg;
@@ -287,9 +338,9 @@
 
       summary.textContent = data.summary || '—';
 
-      strengthsEl.innerHTML = (data.strengths || []).map(s => `<span class="px-3 py-1 rounded-full text-sm bg-green-900/50 text-green-300 border border-green-700">${escapeHtml(s)}</span>`).join('');
-      weaknessesEl.innerHTML = (data.weaknesses || []).map(w => `<span class="px-3 py-1 rounded-full text-sm bg-red-900/50 text-red-300 border border-red-700">${escapeHtml(w)}</span>`).join('');
-      suggestionsEl.innerHTML = (data.suggestions || []).map(s => `<div class="p-3 rounded-lg bg-slate-800 border border-slate-600 text-slate-300">${escapeHtml(s)}</div>`).join('');
+      strengthsEl.innerHTML = (data.strengths || []).map((s, i) => `<span class="result-tag tag-interactive inline-block px-2.5 py-1 rounded-full text-xs bg-emerald-500/20 text-emerald-200 border border-emerald-400/40" style="--i:${i}">${escapeHtml(s)}</span>`).join('');
+      weaknessesEl.innerHTML = (data.weaknesses || []).map((w, i) => `<span class="result-tag tag-interactive inline-block px-2.5 py-1 rounded-full text-xs bg-rose-500/20 text-rose-200 border border-rose-400/40" style="--i:${i}">${escapeHtml(w)}</span>`).join('');
+      suggestionsEl.innerHTML = (data.suggestions || []).map((s, i) => `<div class="result-card card-interactive p-2.5 rounded-lg text-sm text-slate-300 border border-indigo-500/20 bg-slate-800/60" style="--i:${i}">${escapeHtml(s)}</div>`).join('');
     }
 
     function escapeHtml(s) {

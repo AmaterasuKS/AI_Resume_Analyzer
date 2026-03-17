@@ -19,3 +19,18 @@ class QuestionRequest(BaseModel):
 
 class QuestionResponse(BaseModel):
     answer: str
+
+
+class TranslateAnalysisRequest(BaseModel):
+    summary: str
+    strengths: list[str]
+    weaknesses: list[str]
+    suggestions: list[str]
+    target_lang: str
+
+
+class TranslateAnalysisResponse(BaseModel):
+    summary: str
+    strengths: list[str]
+    weaknesses: list[str]
+    suggestions: list[str]
