@@ -14,6 +14,7 @@ class QuestionRequest(BaseModel):
     question: str
     resume_text: str
     job_description: str
+    lang: str = "en"
 
 
 class QuestionResponse(BaseModel):

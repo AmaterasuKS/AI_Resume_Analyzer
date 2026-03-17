@@ -49,6 +49,7 @@ def index():
 async def analyze(
     file: UploadFile = File(...),
     job_description: str = Form(...),
+    lang: str = Form("en"),
 ):
     """Analyze resume file against job description."""
     content = await file.read()
@@ -57,8 +58,10 @@ async def analyze(
     resume_text = _read_resume_file(file, content)
     if not resume_text.strip():
         raise HTTPException(status_code=400, detail="No text extracted from file.")
+    if lang not in ("en", "ru"):
+        lang = "en"
     try:
-        result = analyze_resume(resume_text, job_description)
+        result = analyze_resume(resume_text, job_description, lang=lang)
         # Build response; overwrite resume_text with extracted text (model_dump() already has resume_text)
         payload = result.model_dump() | {"resume_text": resume_text}
         return ResumeAnalysisResponse(**payload)
@@ -71,11 +74,13 @@ async def analyze(
 @app.post("/question", response_model=QuestionResponse)
 async def question(body: QuestionRequest):
     """Answer a question about the resume and job."""
+    lang = body.lang if body.lang in ("en", "ru") else "en"
     try:
         answer = answer_question(
             body.question,
             body.resume_text,
             body.job_description,
+            lang=lang,
         )
     except AuthenticationError:
         raise HTTPException(status_code=401, detail="Invalid or missing Groq API key. Put your key in .env as GROQ_API_KEY.")

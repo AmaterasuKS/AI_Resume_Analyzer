@@ -8,9 +8,13 @@
 </head>
 <body class="bg-slate-900 text-slate-200 min-h-screen font-sans antialiased">
   <div class="max-w-4xl mx-auto px-4 py-8">
-    <header class="text-center mb-10">
+    <header class="relative text-center mb-10">
+      <div class="absolute top-0 right-0 flex gap-1">
+        <button type="button" id="langEn" class="px-3 py-1 rounded text-sm font-medium transition-colors bg-amber-500 text-slate-900" aria-pressed="true">EN</button>
+        <button type="button" id="langRu" class="px-3 py-1 rounded text-sm font-medium transition-colors bg-slate-700 text-slate-300" aria-pressed="false">RU</button>
+      </div>
       <h1 class="text-3xl font-bold text-white">AI Resume Analyzer</h1>
-      <p class="text-slate-400 mt-1">Upload your resume and job description to get a match analysis</p>
+      <p class="text-slate-400 mt-1" data-i18n="subtitle">Upload your resume and job description to get a match analysis</p>
     </header>
 
     <!-- Drop zone -->
@@ -19,17 +23,18 @@
       class="border-2 border-dashed border-slate-600 rounded-xl p-10 text-center cursor-pointer transition-colors hover:border-slate-500 hover:bg-slate-800/50"
     >
       <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.txt" />
-      <p class="text-slate-400" id="dropZoneText">Drag & drop your resume (PDF, DOCX or TXT) or click to browse</p>
+      <p class="text-slate-400" id="dropZoneText" data-i18n="dropZone">Drag & drop your resume (PDF, DOCX or TXT) or click to browse</p>
       <p class="text-sm text-slate-500 mt-1" id="fileName"></p>
     </div>
 
     <!-- Job description -->
     <div class="mt-6">
-      <label for="jobDescription" class="block text-sm font-medium text-slate-300 mb-2">Job description</label>
+      <label for="jobDescription" class="block text-sm font-medium text-slate-300 mb-2" data-i18n="jobLabel">Job description</label>
       <textarea
         id="jobDescription"
         rows="5"
         class="w-full rounded-lg bg-slate-800 border border-slate-600 text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 px-4 py-3"
+        data-i18n-placeholder="jobPlaceholder"
         placeholder="Paste the full job description here..."
       ></textarea>
     </div>
@@ -39,6 +44,7 @@
       <button
         id="analyzeBtn"
         class="w-full py-3 px-6 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        data-i18n="analyzeBtn"
       >
         Analyze
       </button>
@@ -47,7 +53,7 @@
     <!-- Loading -->
     <div id="loading" class="hidden mt-6 text-center">
       <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-slate-400 mt-2">Analyzing...</p>
+      <p class="text-slate-400 mt-2" data-i18n="analyzing">Analyzing...</p>
     </div>
 
     <!-- Results -->
@@ -61,54 +67,56 @@
           </svg>
           <div class="absolute inset-0 flex flex-col items-center justify-center">
             <span id="scoreValue" class="text-3xl font-bold text-white">0</span>
-            <span class="text-slate-400 text-sm">% match</span>
+            <span class="text-slate-400 text-sm" data-i18n="matchLabel">% match</span>
           </div>
         </div>
       </div>
 
       <!-- Summary -->
       <div>
-        <h2 class="text-lg font-semibold text-white mb-2">Summary</h2>
+        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="summary">Summary</h2>
         <p id="summary" class="text-slate-300 leading-relaxed"></p>
       </div>
 
       <!-- Strengths -->
       <div>
-        <h2 class="text-lg font-semibold text-white mb-2">Strengths</h2>
+        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="strengths">Strengths</h2>
         <div id="strengths" class="flex flex-wrap gap-2"></div>
       </div>
 
       <!-- Weaknesses -->
       <div>
-        <h2 class="text-lg font-semibold text-white mb-2">Weaknesses</h2>
+        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="weaknesses">Weaknesses</h2>
         <div id="weaknesses" class="flex flex-wrap gap-2"></div>
       </div>
 
       <!-- Suggestions -->
       <div>
-        <h2 class="text-lg font-semibold text-white mb-2">Suggestions</h2>
+        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="suggestions">Suggestions</h2>
         <div id="suggestions" class="space-y-2"></div>
       </div>
 
       <!-- Ask a question -->
       <div class="pt-6 border-t border-slate-700">
-        <h2 class="text-lg font-semibold text-white mb-2">Ask a question</h2>
-        <p class="text-slate-400 text-sm mb-3">Ask anything about how your resume fits this role.</p>
+        <h2 class="text-lg font-semibold text-white mb-2" data-i18n="askTitle">Ask a question</h2>
+        <p class="text-slate-400 text-sm mb-3" data-i18n="askHint">Ask anything about how your resume fits this role.</p>
         <div class="flex gap-2">
           <input
             type="text"
             id="questionInput"
+            data-i18n-placeholder="questionPlaceholder"
             placeholder="e.g. What should I highlight in the interview?"
             class="flex-1 rounded-lg bg-slate-800 border border-slate-600 text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-amber-500/50 px-4 py-2"
           />
           <button
             id="askBtn"
             class="py-2 px-4 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors disabled:opacity-50"
+            data-i18n="askBtn"
           >
             Ask
           </button>
         </div>
-        <div id="questionLoading" class="hidden mt-2 text-slate-400 text-sm">Thinking...</div>
+        <div id="questionLoading" class="hidden mt-2 text-slate-400 text-sm" data-i18n="thinking">Thinking...</div>
         <div id="questionAnswer" class="hidden mt-3 p-4 rounded-lg bg-slate-800 border border-slate-600 text-slate-300 whitespace-pre-wrap"></div>
       </div>
     </div>
@@ -140,6 +148,100 @@
 
     let selectedFile = null;
     let lastAnalysis = null;
+
+    const translations = {
+      en: {
+        title: 'AI Resume Analyzer',
+        subtitle: 'Upload your resume and job description to get a match analysis',
+        dropZone: 'Drag & drop your resume (PDF, DOCX or TXT) or click to browse',
+        jobLabel: 'Job description',
+        jobPlaceholder: 'Paste the full job description here...',
+        analyzeBtn: 'Analyze',
+        analyzing: 'Analyzing...',
+        matchLabel: '% match',
+        summary: 'Summary',
+        strengths: 'Strengths',
+        weaknesses: 'Weaknesses',
+        suggestions: 'Suggestions',
+        askTitle: 'Ask a question',
+        askHint: 'Ask anything about how your resume fits this role.',
+        questionPlaceholder: 'e.g. What should I highlight in the interview?',
+        askBtn: 'Ask',
+        thinking: 'Thinking...',
+        errSelectFile: 'Please select a resume file.',
+        errJobDesc: 'Please paste the job description.',
+        errEnterQuestion: 'Enter a question.',
+        errRunFirst: 'Run an analysis first.',
+        errGeneric: 'Something went wrong.',
+      },
+      ru: {
+        title: 'Анализ резюме',
+        subtitle: 'Загрузите резюме и описание вакансии для анализа совпадения',
+        dropZone: 'Перетащите резюме (PDF, DOCX или TXT) сюда или нажмите для выбора',
+        jobLabel: 'Описание вакансии',
+        jobPlaceholder: 'Вставьте полный текст вакансии сюда...',
+        analyzeBtn: 'Анализировать',
+        analyzing: 'Анализируем...',
+        matchLabel: '% совпадение',
+        summary: 'Краткий вывод',
+        strengths: 'Сильные стороны',
+        weaknesses: 'Слабые стороны',
+        suggestions: 'Рекомендации',
+        askTitle: 'Задать вопрос',
+        askHint: 'Спросите что угодно о том, как резюме подходит под вакансию.',
+        questionPlaceholder: 'Например: на что сделать упор на собеседовании?',
+        askBtn: 'Спросить',
+        thinking: 'Думаем...',
+        errSelectFile: 'Выберите файл резюме.',
+        errJobDesc: 'Вставьте описание вакансии.',
+        errEnterQuestion: 'Введите вопрос.',
+        errRunFirst: 'Сначала запустите анализ.',
+        errGeneric: 'Что-то пошло не так.',
+      },
+    };
+
+    let lang = (localStorage.getItem('resume-analyzer-lang') || 'en');
+    if (lang !== 'en' && lang !== 'ru') lang = 'en';
+
+    function t(key) {
+      return translations[lang][key] ?? translations.en[key] ?? key;
+    }
+
+    function applyLang() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) el.textContent = translations[lang][key];
+      });
+      // Site name is never translated
+      document.title = 'AI Resume Analyzer';
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[lang][key]) el.placeholder = translations[lang][key];
+      });
+      document.documentElement.lang = lang === 'ru' ? 'ru' : 'en';
+      document.getElementById('langEn').ariaPressed = lang === 'en';
+      document.getElementById('langRu').ariaPressed = lang === 'ru';
+      document.getElementById('langEn').classList.toggle('bg-amber-500', lang === 'en');
+      document.getElementById('langEn').classList.toggle('text-slate-900', lang === 'en');
+      document.getElementById('langEn').classList.toggle('bg-slate-700', lang !== 'en');
+      document.getElementById('langEn').classList.toggle('text-slate-300', lang !== 'en');
+      document.getElementById('langRu').classList.toggle('bg-amber-500', lang === 'ru');
+      document.getElementById('langRu').classList.toggle('text-slate-900', lang === 'ru');
+      document.getElementById('langRu').classList.toggle('bg-slate-700', lang !== 'ru');
+      document.getElementById('langRu').classList.toggle('text-slate-300', lang !== 'ru');
+    }
+
+    document.getElementById('langEn').addEventListener('click', () => {
+      lang = 'en';
+      localStorage.setItem('resume-analyzer-lang', lang);
+      applyLang();
+    });
+    document.getElementById('langRu').addEventListener('click', () => {
+      lang = 'ru';
+      localStorage.setItem('resume-analyzer-lang', lang);
+      applyLang();
+    });
+    applyLang();
 
     dropZone.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-amber-500', 'bg-slate-800/50'); });
@@ -199,12 +301,12 @@
     analyzeBtn.addEventListener('click', async () => {
       hideError();
       if (!selectedFile) {
-        showError('Please select a resume file.');
+        showError(t('errSelectFile'));
         return;
       }
       const jd = jobDescription.value.trim();
       if (!jd) {
-        showError('Please paste the job description.');
+        showError(t('errJobDesc'));
         return;
       }
       loading.classList.remove('hidden');
@@ -214,33 +316,34 @@
         const form = new FormData();
         form.append('file', selectedFile);
         form.append('job_description', jd);
+        form.append('lang', lang);
         const res = await fetch('/analyze', { method: 'POST', body: form });
         const text = await res.text();
         let data;
         try { data = JSON.parse(text); } catch (parseErr) {
           throw parseErr;
         }
-        if (!res.ok) throw new Error(data.detail || 'Analysis failed');
+        if (!res.ok) throw new Error(data.detail || t('errGeneric'));
         lastAnalysis = data;
         renderResults(data);
         results.classList.remove('hidden');
       } catch (e) {
-        showError(e.message || 'Something went wrong.');
+        showError(e.message || t('errGeneric'));
       } finally {
         loading.classList.add('hidden');
         analyzeBtn.disabled = false;
       }
     });
 
-    askBtn.addEventListener('click', async () => {
+    async function submitQuestion() {
       hideError();
       const q = questionInput.value.trim();
       if (!q) {
-        showError('Enter a question.');
+        showError(t('errEnterQuestion'));
         return;
       }
       if (!lastAnalysis?.resume_text) {
-        showError('Run an analysis first.');
+        showError(t('errRunFirst'));
         return;
       }
       questionAnswer.classList.add('hidden');
@@ -254,6 +357,7 @@
             question: q,
             resume_text: lastAnalysis.resume_text,
             job_description: jobDescription.value.trim(),
+            lang: lang,
           }),
         });
         const text = await res.text();
@@ -261,14 +365,22 @@
         try { data = JSON.parse(text); } catch (parseErr) {
           throw parseErr;
         }
-        if (!res.ok) throw new Error(data.detail || 'Request failed');
+        if (!res.ok) throw new Error(data.detail || t('errGeneric'));
         questionAnswer.textContent = data.answer;
         questionAnswer.classList.remove('hidden');
       } catch (e) {
-        showError(e.message || 'Something went wrong.');
+        showError(e.message || t('errGeneric'));
       } finally {
         questionLoading.classList.add('hidden');
         askBtn.disabled = false;
+      }
+    }
+
+    askBtn.addEventListener('click', submitQuestion);
+    questionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitQuestion();
       }
     });
   </script>

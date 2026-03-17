@@ -29,10 +29,18 @@ def _extract_json(text: str) -> dict:
     return json.loads(text)
 
 
-def analyze_resume(resume_text: str, job_description: str) -> ResumeAnalysisResponse:
-    """Analyze resume against job description and return structured result."""
+def analyze_resume(resume_text: str, job_description: str, lang: str = "en") -> ResumeAnalysisResponse:
+    """Analyze resume against job description and return structured result in the requested language."""
     client = _get_client()
+    lang_instruction = (
+        "IMPORTANT: You must respond ONLY in Russian. Write the entire JSON with all text fields "
+        "(summary, strengths, weaknesses, suggestions) in Russian."
+        if lang == "ru"
+        else "IMPORTANT: You must respond ONLY in English. Write the entire JSON with all text fields in English."
+    )
     prompt = """You are an expert HR analyst. Analyze how well the given resume matches the job description.
+
+{lang_instruction}
 
 JOB DESCRIPTION:
 {job_description}
@@ -49,6 +57,7 @@ Respond with ONLY a valid JSON object, no other text. Use this exact structure:
   "summary": "Brief 2-4 sentence summary of fit"
 }}
 """.format(
+        lang_instruction=lang_instruction,
         job_description=job_description,
         resume_text=resume_text,
     )
@@ -72,11 +81,14 @@ Respond with ONLY a valid JSON object, no other text. Use this exact structure:
 
 
 def answer_question(
-    question: str, resume_text: str, job_description: str
+    question: str, resume_text: str, job_description: str, lang: str = "en"
 ) -> str:
-    """Answer a question about the resume and job fit."""
+    """Answer a question about the resume and job fit in the requested language."""
     client = _get_client()
+    lang_instruction = "Answer ONLY in Russian." if lang == "ru" else "Answer ONLY in English."
     prompt = """You have the following job description and resume. Answer the question based only on this information. Be concise.
+
+{lang_instruction}
 
 JOB DESCRIPTION:
 {job_description}
@@ -87,6 +99,7 @@ RESUME:
 QUESTION: {question}
 
 Answer in 1-3 short paragraphs. No JSON, just plain text.""".format(
+        lang_instruction=lang_instruction,
         job_description=job_description,
         resume_text=resume_text,
         question=question,
