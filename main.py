@@ -45,7 +45,11 @@ async def analyze(
     resume_text = _read_resume_file(file, content)
     if not resume_text.strip():
         raise HTTPException(status_code=400, detail="No text extracted from file.")
-    return analyze_resume(resume_text, job_description)
+    result = analyze_resume(resume_text, job_description)
+    return ResumeAnalysisResponse(
+        **result.model_dump(),
+        resume_text=resume_text,
+    )
 
 
 @app.post("/question", response_model=QuestionResponse)

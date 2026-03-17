@@ -7,6 +7,7 @@ class ResumeAnalysisResponse(BaseModel):
     weaknesses: list[str]
     suggestions: list[str]
     summary: str
+    resume_text: str = ""  # for frontend to use with /question
 
 
 class QuestionRequest(BaseModel):
