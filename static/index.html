@@ -215,7 +215,17 @@
         form.append('file', selectedFile);
         form.append('job_description', jd);
         const res = await fetch('/analyze', { method: 'POST', body: form });
-        const data = await res.json();
+        const text = await res.text();
+        // #region agent log
+        fetch('http://127.0.0.1:7436/ingest/07d731a6-b560-4b21-a7bb-672bb72850ab',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'397b03'},body:JSON.stringify({sessionId:'397b03',location:'index.html:analyze',message:'analyze response',data:{status:res.status,contentType:res.headers.get('Content-Type'),bodyPreview:text.slice(0,400)},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        let data;
+        try { data = JSON.parse(text); } catch (parseErr) {
+          // #region agent log
+          fetch('http://127.0.0.1:7436/ingest/07d731a6-b560-4b21-a7bb-672bb72850ab',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'397b03'},body:JSON.stringify({sessionId:'397b03',location:'index.html:analyze',message:'JSON parse failed',data:{parseError:String(parseErr),bodyPreview:text.slice(0,400)},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+          // #endregion
+          throw parseErr;
+        }
         if (!res.ok) throw new Error(data.detail || 'Analysis failed');
         lastAnalysis = data;
         renderResults(data);
@@ -252,7 +262,15 @@
             job_description: jobDescription.value.trim(),
           }),
         });
-        const data = await res.json();
+        const text = await res.text();
+        // #region agent log
+        fetch('http://127.0.0.1:7436/ingest/07d731a6-b560-4b21-a7bb-672bb72850ab',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'397b03'},body:JSON.stringify({sessionId:'397b03',location:'index.html:question',message:'question response',data:{status:res.status,contentType:res.headers.get('Content-Type'),bodyPreview:text.slice(0,400)},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
+        let data;
+        try { data = JSON.parse(text); } catch (parseErr) {
+          fetch('http://127.0.0.1:7436/ingest/07d731a6-b560-4b21-a7bb-672bb72850ab',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'397b03'},body:JSON.stringify({sessionId:'397b03',location:'index.html:question',message:'JSON parse failed',data:{parseError:String(parseErr),bodyPreview:text.slice(0,400)},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+          throw parseErr;
+        }
         if (!res.ok) throw new Error(data.detail || 'Request failed');
         questionAnswer.textContent = data.answer;
         questionAnswer.classList.remove('hidden');
