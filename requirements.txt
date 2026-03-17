@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+groq
+pymupdf
+python-docx
+python-dotenv
+pydantic
